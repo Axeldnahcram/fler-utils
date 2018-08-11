@@ -6,4 +6,6 @@ fler_utils/constants.py
 fler_utils.egg-info/PKG-INFO
 fler_utils.egg-info/SOURCES.txt
 fler_utils.egg-info/dependency_links.txt
+fler_utils.egg-info/not-zip-safe
+fler_utils.egg-info/requires.txt
 fler_utils.egg-info/top_level.txt

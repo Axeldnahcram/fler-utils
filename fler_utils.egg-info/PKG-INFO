@@ -1,0 +1,13 @@
+Metadata-Version: 1.1
+Name: fler-utils
+Version: 0.0.1
+Summary: UNKNOWN
+Home-page: UNKNOWN
+Author: Axel Marchand
+Author-email: axel-marchand@hotmail.fr
+License: UNKNOWN
+Description: # FLER-utils : french learning entity recognition
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.x

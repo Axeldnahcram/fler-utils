@@ -19,9 +19,8 @@ from dotenv import load_dotenv, find_dotenv
 import aiofiles
 # custom
 import sys
+import fler_utils.constants as cst
 import os
-sys.path.append(os.path.abspath("~/Documents/Projets/FLER"))
-from FLER import constants as cst
 
 LOGGER = logzero.logger
 
@@ -40,7 +39,7 @@ def get_asset_root() -> Dict[str, str]:
     dict["txt_root"] = txt_root
     return dict
 
-def get_file_content(cfg, name):
+async def get_file_content(cfg, name):
     contents = {}
     if cst.CSV_ROOT in cfg:
         root_folder = cfg.get(cst.CSV_ROOT)
@@ -49,7 +48,7 @@ def get_file_content(cfg, name):
             return csv_file
     if cst.PQL_ROOT in cfg:
         root_folder = cfg.get(cst.PQL_ROOT)
-        sql_file = f"{root_folder}/{name}.pql"
+        pql_file = f"{root_folder}/{name}.pql"
         if os.path.isfile(pql_file):
             async with aiofiles.open(pql_file) as f:
                 contents = await f.read()

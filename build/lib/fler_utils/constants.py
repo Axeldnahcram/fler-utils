@@ -1,7 +1,7 @@
 # coding: utf-8
 """
 .. module:: fler_utils.constants
-Constants module for FLER utilities
+Constants module for fler utilities
 """
 
 __author__ = "Axel Marchand"
