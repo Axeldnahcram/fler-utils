@@ -21,6 +21,8 @@ import aiofiles
 import sys
 import os
 import fler_utils.constants as cst
+import asyncio
+
 LOGGER = logzero.logger
 
 def get_asset_root() -> Dict[str, str]:
@@ -29,7 +31,7 @@ def get_asset_root() -> Dict[str, str]:
     :rtype: dictionnary
     """
     dir = pathlib.Path(__file__).parent.parent.parent
-    pql_root = str(pathlib.PurePath(dir, 'ext_files/pkl'))
+    pkl_root = str(pathlib.PurePath(dir, 'ext_files/pkl'))
     csv_root = str(pathlib.PurePath(dir, 'ext_files/csv'))
     txt_root = str(pathlib.PurePath(dir, 'ext_files/txt'))
     gazetteer_en_root = str(pathlib.PurePath(dir, 'ext_files/csv/Gazetteer_ENG'))
@@ -38,7 +40,7 @@ def get_asset_root() -> Dict[str, str]:
     trainingdatasets_root = str(pathlib.PurePath(dir, 'ext_files/trainingdatasets/'))
     dict = {}
     dict
-    dict["pql_root"] = pql_root
+    dict["pkl_root"] = pkl_root
     dict["csv_root"] = csv_root
     dict["txt_root"] = txt_root
     dict["gazetteer_en_root"] = gazetteer_en_root
@@ -55,9 +57,9 @@ def get_file_content(cfg, name, gaztype = None):
         csv_file = f"{root_folder}/{name}.csv"
         if os.path.isfile(csv_file):
             return csv_file
-    if cst.PQL_ROOT in cfg:
-        root_folder = cfg.get(cst.PQL_ROOT)
-        pql_file = f"{root_folder}/{name}.pql"
+    if cst.PKL_ROOT in cfg:
+        root_folder = cfg.get(cst.PKL_ROOT)
+        pql_file = f"{root_folder}/{name}.pkl"
         if os.path.isfile(pql_file):
              return pql_file
     if cst.TXT_ROOT in cfg:
@@ -67,6 +69,7 @@ def get_file_content(cfg, name, gaztype = None):
             return txt_file
     if cst.JSON_ROOT in cfg:
         root_folder = cfg.get(cst.JSON_ROOT)
+        LOGGER.info(f"{root_folder}/{name}.json")
         txt_file = f"{root_folder}/{name}.json"
         if os.path.isfile(txt_file):
             return txt_file
@@ -105,8 +108,80 @@ def get_type_of_gazetteers(cfg,language: str='en'):
     list_gaz = os.listdir(root_folder)
     return list_gaz
 
+def get_redis_url() -> str:
+    """
+    .. function:: get_redis_url()
+      :returns: Redis server's url
+    """
+    load_dotenv(find_dotenv())
+    ret = "redis://localhost"
+    if cst.REDIS_URL in os.environ:
+        ret = os.environ[cst.REDIS_URL]
+    return ret
+    # return "redis://localhost:63790"
+
+
+def get_pg_dsn() -> str:
+    """
+    .. function:: get_pg_dsn()
+    """
+    load_dotenv(find_dotenv())
+    # ret = "dbname=postgres user=postgres host=127.0.0.1 port=54320"
+    ret = "dbname=albator user=albator password=albatorpwd host=localhost port=54320"
+    if cst.PG_DSN in os.environ:
+        ret = os.environ[cst.PG_DSN]
+    return ret
+
+
+async def store_configuration(cfg: Dict[str, str]) -> None:
+    """
+    .. function:: store_configuration(cfg)
+      :param cfg: Dictionary containing the Api configuration
+    Store the configuration dict into redis cache
+    """
+    conn = None
+    try:
+        redis_conn = get_redis_url()
+        pprint("Connection to redis --> " + redis_conn)
+        conn = await aioredis.create_connection(redis_conn, loop=asyncio.get_event_loop())
+        await conn.execute(cst.SET, cst.API_CONFIGURATION, json.dumps(cfg))
+    except Exception as e:
+        LOGGER.error("Could not store configuration in Redis")
+        raise e
+    finally:
+        if conn is not None:
+            conn.close()
+            await conn.wait_closed()
+
+
+async def get_configuration() -> Dict[str, str]:
+    """
+    .. function:: get_configuration()
+      :rtype: Dict[str, str]
+      :returns: The configuration stored earlier
+    Gets the configuration from memory store
+    """
+    ret = {}
+    conn = None
+    try:
+        redis_conn = get_redis_url()
+        pprint("Connection to redis --> " + redis_conn)
+        conn = await aioredis.create_connection(redis_conn, loop=asyncio.get_event_loop())
+        fin = await conn.execute(cst.GET, cst.API_CONFIGURATION)
+        # LOGGER.info(fin)
+        ret = json.loads(fin)
+    except Exception as e:
+        LOGGER.error("Could not retrieve the stored configuration in Redis")
+        raise e
+    finally:
+        if conn is not None:
+            conn.close()
+            await conn.wait_closed()
+    # LOGGER.info(ret)
+    return ret
+
 if __name__ == "__main__":
     f = get_asset_root()
     LOGGER.info(f)
-    g = get_file_content(f, "CoNLL2003/test")
+    g = os.path.isfile("/Users/amarchand/Documents/Projets/fler/ext_files/json/pre_freq_CONLL2003/puniORG.json")
     LOGGER.info(g)
