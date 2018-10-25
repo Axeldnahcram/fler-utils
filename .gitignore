@@ -15,5 +15,5 @@ wheels/
 .installed.cfg
 *.egg
 
-fler_utils/__pycache__/*
+fler_utils/__pycache__/
 */__pycache__/*
