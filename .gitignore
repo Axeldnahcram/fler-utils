@@ -16,4 +16,4 @@ wheels/
 *.egg
 
 fler_utils/__pycache__/
-*/__pycache__/*
+*/__pycache__/
