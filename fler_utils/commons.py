@@ -39,7 +39,6 @@ def get_asset_root() -> Dict[str, str]:
     json_root = str(pathlib.PurePath(dir, 'ext_files/json/'))
     trainingdatasets_root = str(pathlib.PurePath(dir, 'ext_files/trainingdatasets/'))
     dict = {}
-    dict
     dict["pkl_root"] = pkl_root
     dict["csv_root"] = csv_root
     dict["txt_root"] = txt_root
@@ -82,6 +81,16 @@ def get_file_content(cfg, name, gaztype = None):
             return txt_file
     if name == 'gazetteer_en':
         root_folder = cfg.get('gazetteer_en_root')
+        ret = []
+        if gaztype is None:
+            for i in os.listdir(root_folder):
+                ret.append(f"{root_folder}/{i}")
+        else:
+            for i in os.listdir(f"{root_folder}/{gaztype}"):
+                ret.append(f"{root_folder}/{gaztype}/{i}")
+        return ret
+    if name == 'gazetteer_fr':
+        root_folder = cfg.get('gazetteer_fr_root')
         ret = []
         if gaztype is None:
             for i in os.listdir(root_folder):
@@ -182,6 +191,4 @@ async def get_configuration() -> Dict[str, str]:
 
 if __name__ == "__main__":
     f = get_asset_root()
-    LOGGER.info(f)
-    g = os.path.isfile("/Users/amarchand/Documents/Projets/fler/ext_files/json/pre_freq_CONLL2003/puniORG.json")
-    LOGGER.info(g)
+    LOGGER.info(get_file_content(f, "gazetteer_fr", "LOC"))
